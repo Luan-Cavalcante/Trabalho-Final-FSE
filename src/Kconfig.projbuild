@@ -1,14 +1,14 @@
 menu "Configuração do Wifi"
 
     config ESP_WIFI_SSID
-        string "LADES_Ailab5G"
-        default "LADES_Ailab5G"
+        string ""
+        default ""
         help
             Nome da rede Wifi.
 
     config ESP_WIFI_PASSWORD
-        string "alexandreogrande"
-        default "alexandreogrande"
+        string ""
+        default ""
         help
             Senha do WiFi (WPA or WPA2).
 
