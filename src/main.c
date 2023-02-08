@@ -58,7 +58,7 @@ void trataComunicacaoComServidor(void * params)
        sprintf(jsonatributos, "{\"luz\":%d}",luz);
 
        mqtt_envia_mensagem("v1/devices/me/attributes", jsonatributos);
-       vTaskDelay(1000 / portTICK_PERIOD_MS);
+       vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
   }
 }
@@ -100,8 +100,8 @@ void TrataGPIO(){
 
     posicao_x = posicao_x - 512;
     posicao_y = posicao_y - 512;
-    printf("Posição X: %.3d \t Posição Y: %.3d \t Luz : %d  |  Botão: %d\n", posicao_x, posicao_y, luz,botao);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    //printf("Posição X: %.3d \t Posição Y: %.3d \t Luz : %d  |  Botão: %d\n", posicao_x, posicao_y, luz,botao);
+    vTaskDelay(300 / portTICK_PERIOD_MS);
 
     if(posicao_x == 511)
     {
@@ -156,7 +156,7 @@ void app_main(void)
     conexaoMQTTSemaphore = xSemaphoreCreateBinary();
     wifi_start();
 
-    xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
+    //xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
     xTaskCreate(&conectadoWifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
     xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
 
