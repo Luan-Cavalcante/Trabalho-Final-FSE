@@ -15,10 +15,13 @@
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
 
+#include "driver/gpio.h"
+
 #include "esp_log.h"
 #include "mqtt_client.h"
 
 #include "mqtt.h"
+#include "cJSON.h"
 
 #define TAG "MQTT"
 
@@ -66,7 +69,28 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         printf("DATA=%.*s\r\n", event->data_len, event->data);
 
         // AQUI FAZ O PARSER DOS DADOS RECEBIDOS EM JSON E METE O LOUCO
-        
+        cJSON *json = cJSON_ParseWithLength(event->data, event->data_len);
+
+        char *method = cJSON_GetObjectItem(json, "method")->valuestring;
+        if (strcmp(method, "movimento") == 0)
+        {
+            // MOVIMENTACAO DO CARRINHO
+            char *movement = cJSON_GetObjectItem(cJSON_GetObjectItem(json, "params"), "movement")->valuestring;
+            if (strcmp(movement, "front") == 0)
+            {
+                // So liga o led por enquanto
+                gpio_set_level(2, 1);
+                ESP_LOGI(TAG, "Acelerooo");
+            }
+            else if (strcmp(movement, "down") == 0)
+            {
+                // So desliga o led por enquanto
+                gpio_set_level(2, 0);
+                ESP_LOGI(TAG, "Ree");
+            }
+        }
+
+        cJSON_free(json);
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
