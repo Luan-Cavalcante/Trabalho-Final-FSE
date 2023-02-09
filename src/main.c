@@ -8,6 +8,7 @@
 
 #include "wifi.h"
 #include "mqtt.h"
+#include "dht11.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -24,6 +25,8 @@
 #define LED3 18
 #define LED4 4
 #define FAROL 2
+
+#define DHT11_PIN 5
 
 SemaphoreHandle_t conexaoWifiSemaphore;
 SemaphoreHandle_t conexaoMQTTSemaphore;
@@ -51,19 +54,26 @@ void trataComunicacaoComServidor(void * params)
   {
     while(true)
     {
-       float temperatura = 20.0 + (float)rand()/(float)(RAND_MAX/10.0);
-       sprintf(mensagem, "{\"temperatura\": %f}", temperatura);
-       mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+      vTaskDelay(2000 / portTICK_PERIOD_MS);
+      struct dht11_reading value = DHT11_read();
+      if (value.status != DHT11_OK)
+      {
+        ESP_LOGD("Comunicacao Servidor", "Falha ao ler o DHT11");
+        continue;
+      }
 
-       sprintf(jsonatributos, "{\"luz\":%d}",luz);
+      sprintf(mensagem, "{\"temperatura\": %d, \"umidade\": %d}", value.temperature, value.humidity);
+      mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
 
-       mqtt_envia_mensagem("v1/devices/me/attributes", jsonatributos);
-       vTaskDelay(2000 / portTICK_PERIOD_MS);
+      sprintf(jsonatributos, "{\"luz\":%d}",luz);
+
+      mqtt_envia_mensagem("v1/devices/me/attributes", jsonatributos);
     }
   }
 }
 
-void TrataGPIO(){
+void initGPIO()
+{
   esp_rom_gpio_pad_select_gpio(JOYSTICK_BOTAO);
   esp_rom_gpio_pad_select_gpio(LED1);
   esp_rom_gpio_pad_select_gpio(LED2);
@@ -89,7 +99,9 @@ void TrataGPIO(){
   adc1_config_channel_atten(JOYSTICK_X, ADC_ATTEN_DB_6);
   adc1_config_channel_atten(JOYSTICK_Y, ADC_ATTEN_DB_6);
   adc1_config_channel_atten(LDR, ADC_ATTEN_DB_6);
+}
 
+void TrataGPIO(){
   while (true)
   {
     int posicao_x = adc1_get_raw(JOYSTICK_X);
@@ -155,6 +167,11 @@ void app_main(void)
     conexaoWifiSemaphore = xSemaphoreCreateBinary();
     conexaoMQTTSemaphore = xSemaphoreCreateBinary();
     wifi_start();
+
+    // Inicializa GPIO
+    initGPIO();
+    // Inicializa DHT11
+    DHT11_init(DHT11_PIN);
 
     //xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
     xTaskCreate(&conectadoWifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
