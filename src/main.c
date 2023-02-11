@@ -22,10 +22,9 @@
 #define FAROL1 4
 #define FAROL 2
 #define SENSOR_P 36
-#define en 14
-#define primeiro 27
-#define segundo 26
-
+#define en 12
+#define primeiro 14
+#define segundo 27
 
 #define DHT11_PIN 5
 
@@ -34,11 +33,11 @@ SemaphoreHandle_t conexaoMQTTSemaphore;
 
 int luz = 0;
 
-void conectadoWifi(void * params)
+void conectadoWifi(void *params)
 {
-  while(true)
+  while (true)
   {
-    if(xSemaphoreTake(conexaoWifiSemaphore, portMAX_DELAY))
+    if (xSemaphoreTake(conexaoWifiSemaphore, portMAX_DELAY))
     {
       // Processamento Internet
       mqtt_start();
@@ -46,14 +45,14 @@ void conectadoWifi(void * params)
   }
 }
 
-void trataComunicacaoComServidor(void * params)
+void trataComunicacaoComServidor(void *params)
 {
   char mensagem[50];
   char jsonatributos[200];
 
-  if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
+  if (xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
   {
-    while(true)
+    while (true)
     {
       vTaskDelay(2000 / portTICK_PERIOD_MS);
       struct dht11_reading value = DHT11_read();
@@ -66,7 +65,7 @@ void trataComunicacaoComServidor(void * params)
       sprintf(mensagem, "{\"temperatura\": %d, \"umidade\": %d}", value.temperature, value.humidity);
       mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
 
-      sprintf(jsonatributos, "{\"luz\":%d}",luz);
+      sprintf(jsonatributos, "{\"luz\":%d}", luz);
 
       mqtt_envia_mensagem("v1/devices/me/attributes", jsonatributos);
     }
@@ -85,7 +84,6 @@ void initGPIO()
   esp_rom_gpio_pad_select_gpio(primeiro);
   esp_rom_gpio_pad_select_gpio(segundo);
 
-
   // seta para outputs
   gpio_set_direction(LED1, GPIO_MODE_OUTPUT);
   gpio_set_direction(LED2, GPIO_MODE_OUTPUT);
@@ -97,67 +95,62 @@ void initGPIO()
   gpio_set_direction(primeiro, GPIO_MODE_OUTPUT);
   gpio_set_direction(segundo, GPIO_MODE_OUTPUT);
 
-
   gpio_set_direction(SENSOR_P, GPIO_MODE_INPUT);
 
   adc1_config_width(ADC_ATTEN_DB_6);
   adc1_config_channel_atten(LDR, ADC_ATTEN_DB_6);
 }
 
-void TrataGPIO(){
-
-      
-
-
+void TrataGPIO()
+{
 
   while (true)
   {
-    gpio_set_level(en,1);
-      gpio_set_level(primeiro,1);
-      gpio_set_level(segundo,0);
+    gpio_set_level(en, 1);
+    gpio_set_level(primeiro, 1);
+    gpio_set_level(segundo, 0);
 
     luz = adc1_get_raw(LDR);
     int obstaculo = gpio_get_level(SENSOR_P);
 
-    printf("Luz : %d presença : %d\n", luz,obstaculo);
+    printf("Luz : %d presença : %d\n", luz, obstaculo);
 
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    // luz 
+    // luz
     if (luz < 200)
     {
-      gpio_set_level(FAROL,1);
-      gpio_set_level(FAROL1,1);
-
+      gpio_set_level(FAROL, 1);
+      gpio_set_level(FAROL1, 1);
     }
-    else{
-      gpio_set_level(FAROL,0);
-      gpio_set_level(FAROL1,0);
+    else
+    {
+      gpio_set_level(FAROL, 0);
+      gpio_set_level(FAROL1, 0);
     }
   }
 }
 
 void app_main(void)
 {
-    // Inicializa o NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-    
-    conexaoWifiSemaphore = xSemaphoreCreateBinary();
-    conexaoMQTTSemaphore = xSemaphoreCreateBinary();
-    wifi_start();
+  // Inicializa o NVS
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+  {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
 
-    // Inicializa GPIO
-    initGPIO();
-    // Inicializa DHT11
-    DHT11_init(DHT11_PIN);
+  conexaoWifiSemaphore = xSemaphoreCreateBinary();
+  conexaoMQTTSemaphore = xSemaphoreCreateBinary();
+  wifi_start();
 
-    xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
-    xTaskCreate(&conectadoWifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
-    xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
+  // Inicializa GPIO
+  initGPIO();
+  // Inicializa DHT11
+  DHT11_init(DHT11_PIN);
 
+  xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
+  xTaskCreate(&conectadoWifi, "Conexão ao MQTT", 4096, NULL, 1, NULL);
+  xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
 }
-
