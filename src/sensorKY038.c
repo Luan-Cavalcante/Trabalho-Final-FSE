@@ -8,7 +8,7 @@
 void app_main(void)
 {
     // Pino do KY-038 conectado ao pino 14 na ESP32
-    const int sensorPin = 14;
+    const int sensorPin = 36;
     // Pino para o LED na ESP32
     const int ledPin = 2;
 
