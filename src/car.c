@@ -7,8 +7,8 @@
 #define ENGINE1_SECOND 27
 
 #define ENGINE2_EN 33
-#define ENGINE2_FIRST 26
-#define ENGINE2_SECOND 25
+#define ENGINE2_FIRST 25
+#define ENGINE2_SECOND 26
 
 void engineInit(struct L298NEngine engine)
 {
