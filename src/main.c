@@ -9,6 +9,7 @@
 #include "wifi.h"
 #include "mqtt.h"
 #include "dht11.h"
+#include "car.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -22,10 +23,7 @@
 #define FAROL1 4
 #define FAROL 2
 #define SENSOR_P 36
-#define en 14
-#define primeiro 27
-#define segundo 26
-
+#define BUZZER 23
 
 #define DHT11_PIN 5
 
@@ -69,6 +67,7 @@ void trataComunicacaoComServidor(void * params)
       sprintf(jsonatributos, "{\"luz\":%d}",luz);
 
       mqtt_envia_mensagem("v1/devices/me/attributes", jsonatributos);
+      ESP_LOGI("Comunicacao Servidor", "%s", mensagem);
     }
   }
 }
@@ -81,9 +80,7 @@ void initGPIO()
   esp_rom_gpio_pad_select_gpio(FAROL1);
   esp_rom_gpio_pad_select_gpio(SENSOR_P);
   esp_rom_gpio_pad_select_gpio(FAROL);
-  esp_rom_gpio_pad_select_gpio(en);
-  esp_rom_gpio_pad_select_gpio(primeiro);
-  esp_rom_gpio_pad_select_gpio(segundo);
+  // esp_rom_gpio_pad_select_gpio(BUZZER);
 
 
   // seta para outputs
@@ -92,11 +89,9 @@ void initGPIO()
   gpio_set_direction(LED3, GPIO_MODE_OUTPUT);
   gpio_set_direction(FAROL1, GPIO_MODE_OUTPUT);
   gpio_set_direction(FAROL, GPIO_MODE_OUTPUT);
+  // gpio_set_direction(BUZZER, GPIO_MODE_OUTPUT);
 
-  gpio_set_direction(en, GPIO_MODE_OUTPUT);
-  gpio_set_direction(primeiro, GPIO_MODE_OUTPUT);
-  gpio_set_direction(segundo, GPIO_MODE_OUTPUT);
-
+  // gpio_set_level(BUZZER, 1);
 
   gpio_set_direction(SENSOR_P, GPIO_MODE_INPUT);
 
@@ -105,17 +100,8 @@ void initGPIO()
 }
 
 void TrataGPIO(){
-
-      
-
-
-
   while (true)
   {
-    gpio_set_level(en,1);
-      gpio_set_level(primeiro,1);
-      gpio_set_level(segundo,0);
-
     luz = adc1_get_raw(LDR);
     int obstaculo = gpio_get_level(SENSOR_P);
 
@@ -127,7 +113,6 @@ void TrataGPIO(){
     {
       gpio_set_level(FAROL,1);
       gpio_set_level(FAROL1,1);
-
     }
     else{
       gpio_set_level(FAROL,0);
@@ -145,19 +130,22 @@ void app_main(void)
       ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-    
+
     conexaoWifiSemaphore = xSemaphoreCreateBinary();
     conexaoMQTTSemaphore = xSemaphoreCreateBinary();
     wifi_start();
 
     // Inicializa GPIO
     initGPIO();
+    // Inicializa o carrinho
+    carInit(getCar());
     // Inicializa DHT11
     DHT11_init(DHT11_PIN);
 
     xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
     xTaskCreate(&conectadoWifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
     xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
+    // xTaskCreate(&moveCar, "Movimentação do carrinho", 4096, NULL, 1, NULL);
 
 }
 
