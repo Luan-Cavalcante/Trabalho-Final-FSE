@@ -21,6 +21,7 @@
 #include "mqtt_client.h"
 
 #include "mqtt.h"
+#include "car.h"
 #include "cJSON.h"
 
 #define TAG "MQTT"
@@ -75,19 +76,27 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         if (strcmp(method, "movimento") == 0)
         {
             // MOVIMENTACAO DO CARRINHO
-            char *movement = cJSON_GetObjectItem(cJSON_GetObjectItem(json, "params"), "movement")->valuestring;
-            if (strcmp(movement, "front") == 0)
+            cJSON *params = cJSON_GetObjectItem(json, "params");
+            char *movement = cJSON_GetObjectItem(params, "movement")->valuestring;
+            bool isPressing = cJSON_GetObjectItem(params, "on")->valueint;
+            ESP_LOGI(TAG, "Recebi movimento %s -> %d", movement, isPressing);
+
+            int direction = CAR_IDLE;
+            if (isPressing)
             {
-                // So liga o led por enquanto
-                gpio_set_level(2, 1);
-                ESP_LOGI(TAG, "Acelerooo");
+                if (strcmp(movement, "front") == 0)
+                    direction = CAR_FORWARD;
+                else if (strcmp(movement, "down") == 0)
+                    direction = CAR_BACKWARD;
+                else if (strcmp(movement, "right") == 0)
+                    direction = CAR_TURN_RIGHT;
+                else if (strcmp(movement, "left") == 0)
+                    direction = CAR_TURN_LEFT;
+                else
+                    direction = CAR_BREAK;
             }
-            else if (strcmp(movement, "down") == 0)
-            {
-                // So desliga o led por enquanto
-                gpio_set_level(2, 0);
-                ESP_LOGI(TAG, "Ree");
-            }
+
+            carMove(getCar(), direction);
         }
 
         cJSON_free(json);
