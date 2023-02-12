@@ -10,6 +10,8 @@
 #include "mqtt.h"
 #include "dht11.h"
 #include "car.h"
+#include "state.h"
+#include "buzzer.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -30,8 +32,6 @@
 SemaphoreHandle_t conexaoWifiSemaphore;
 SemaphoreHandle_t conexaoMQTTSemaphore;
 
-int luz = 0;
-
 void conectadoWifi(void *params)
 {
   while (true)
@@ -46,28 +46,23 @@ void conectadoWifi(void *params)
 
 void trataComunicacaoComServidor(void *params)
 {
-  char mensagem[50];
-  char jsonatributos[200];
+  char mensagem[256];
+  struct State *state = getState();
 
   if (xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
   {
     while (true)
     {
-      vTaskDelay(2000 / portTICK_PERIOD_MS);
-      struct dht11_reading value = DHT11_read();
-      if (value.status != DHT11_OK)
-      {
-        ESP_LOGD("Comunicacao Servidor", "Falha ao ler o DHT11");
-        continue;
-      }
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-      sprintf(mensagem, "{\"temperatura\": %d, \"umidade\": %d}", value.temperature, value.humidity);
+      sprintf(mensagem, "{\"temperatura\": %d, \"umidade\": %d}", state->temperature, state->humidity);
       mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
 
-      sprintf(jsonatributos, "{\"luz\":%d}", luz);
+      sprintf(mensagem, "{\"luz\":%d}", state->light);
+      mqtt_envia_mensagem("v1/devices/me/attributes", mensagem);
 
-      mqtt_envia_mensagem("v1/devices/me/attributes", jsonatributos);
-      ESP_LOGI("Comunicacao Servidor", "%s", mensagem);
+      ESP_LOGI("State", "(buzzerOn=%d,headlightOn=%d,lowPowerMode=%d)", state->buzzerOn, state->headlightOn, state->lowPowerMode);
+      ESP_LOGI("State", "(temperature=%d,humidity=%d,light=%d,obstacle=%d)", state->temperature, state->humidity, state->light, state->obstacle);
     }
   }
 }
@@ -100,16 +95,26 @@ void initGPIO()
 
 void TrataGPIO()
 {
+  struct State *state = getState();
+
   while (true)
   {
-    luz = adc1_get_raw(LDR);
-    int obstaculo = gpio_get_level(SENSOR_P);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
 
-    printf("Luz : %d presença : %d\n", luz, obstaculo);
+    /* Atualizando Estado da aplicação */
+    state->light = adc1_get_raw(LDR);
+    state->obstacle = gpio_get_level(SENSOR_P);
 
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    struct dht11_reading dht11_value = DHT11_read();
+    if (dht11_value.status == DHT11_OK)
+    {
+      state->temperature = dht11_value.temperature;
+      state->humidity = dht11_value.humidity;
+    }
+
+    /* Atualizando ESP32 */
     // luz
-    if (luz < 200)
+    if (state->light < 200 || state->headlightOn)
     {
       gpio_set_level(FAROL, 1);
       gpio_set_level(FAROL1, 1);
@@ -119,6 +124,12 @@ void TrataGPIO()
       gpio_set_level(FAROL, 0);
       gpio_set_level(FAROL1, 0);
     }
+
+    // buzzer
+    if (state->buzzerOn)
+      make_sound(999);
+    else
+      stop_sound();
   }
 }
 
@@ -143,9 +154,10 @@ void app_main(void)
   carInit(getCar());
   // Inicializa DHT11
   DHT11_init(DHT11_PIN);
+  // Inicializa buzzer
+  timed_sound(456, 1);
 
   xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
   xTaskCreate(&conectadoWifi, "Conexão ao MQTT", 4096, NULL, 1, NULL);
   xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
-  // xTaskCreate(&moveCar, "Movimentação do carrinho", 4096, NULL, 1, NULL);
 }
