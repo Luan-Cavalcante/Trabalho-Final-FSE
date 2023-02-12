@@ -23,6 +23,7 @@
 #include "mqtt.h"
 #include "car.h"
 #include "cJSON.h"
+#include "state.h"
 
 #define TAG "MQTT"
 
@@ -97,6 +98,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             }
 
             carMove(getCar(), direction);
+        }
+
+        if (strcmp(method, "buzina") == 0)
+        {
+            cJSON *params = cJSON_GetObjectItem(json, "params");
+            getState()->buzzerOn = cJSON_GetObjectItem(params, "pressing")->valueint;
         }
 
         cJSON_free(json);
