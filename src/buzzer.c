@@ -26,7 +26,7 @@ inline bool isDelay(struct Note note)
 	return note.freq == DELAY_NOTE;
 }
 
-void sound(int gpio_num, uint32_t freq, uint32_t duration)
+void make_sound(uint32_t freq)
 {
 	ledc_timer_config_t timer_conf = {
 		.speed_mode = GPIO_OUTPUT_SPEED,
@@ -37,7 +37,7 @@ void sound(int gpio_num, uint32_t freq, uint32_t duration)
 	ledc_timer_config(&timer_conf);
 
 	ledc_channel_config_t ledc_conf = {
-		.gpio_num = gpio_num,
+		.gpio_num = BUZZER_GPIO,
 		.speed_mode = GPIO_OUTPUT_SPEED,
 		.channel = LEDC_CHANNEL_0,
 		// .intr_type  = LEDC_INTR_DISABLE,
@@ -51,10 +51,19 @@ void sound(int gpio_num, uint32_t freq, uint32_t duration)
 	// start
 	ledc_set_duty(GPIO_OUTPUT_SPEED, LEDC_CHANNEL_0, 0x7F); // 12% duty - play here for your speaker or buzzer
 	ledc_update_duty(GPIO_OUTPUT_SPEED, LEDC_CHANNEL_0);
-	vTaskDelay(duration / portTICK_PERIOD_MS);
-	// stop
+}
+
+void stop_sound()
+{
 	ledc_set_duty(GPIO_OUTPUT_SPEED, LEDC_CHANNEL_0, 0);
 	ledc_update_duty(GPIO_OUTPUT_SPEED, LEDC_CHANNEL_0);
+}
+
+void timed_sound(uint32_t freq, uint32_t duration)
+{
+	make_sound(freq);
+	vTaskDelay(duration / portTICK_PERIOD_MS);
+	stop_sound();
 }
 
 void play_note(struct Note note)
@@ -62,7 +71,7 @@ void play_note(struct Note note)
 	if (isDelay(note))
 		vTaskDelay(note.duration / portTICK_PERIOD_MS);
 	else
-		sound(BUZZER_GPIO, note.freq, note.duration);
+		timed_sound(note.freq, note.duration);
 }
 
 void play_music(struct Music music)

@@ -9,6 +9,10 @@
   }
 #define newDelayNote(_d) newNote(DELAY_NOTE, _d)
 
+void make_sound(uint32_t freq);
+void stop_sound();
+void timed_sound(uint32_t freq, uint32_t duration);
+
 struct Note
 {
   int freq, duration;
