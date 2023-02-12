@@ -5,6 +5,9 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 
+
+/* Exemplo de como usar 
+    (Função comentada para não dar conflito)
 void app_main(void)
 {
     // Pino do KY-038 conectado ao pino 14 na ESP32
@@ -50,3 +53,4 @@ void app_main(void)
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
+*/

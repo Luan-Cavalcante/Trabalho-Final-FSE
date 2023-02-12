@@ -8,9 +8,9 @@
 
 void setup()
 {
-    gpio_pad_select_gpio(KY_032_PIN);
+    esp_rom_gpio_pad_select_gpio(KY_032_PIN);
     gpio_set_direction(KY_032_PIN, GPIO_MODE_INPUT);
-    Serial.begin(115200);
+    // Serial.begin(115200);
 }
 
 void loop()
@@ -19,16 +19,20 @@ void loop()
 
     if (sensorValue == 1)
     {
-        Serial.println("Obstáculo detectado");
+        // Serial.println("Obstáculo detectado");
+        printf("Obstáculo detectado\n");
     }
     else
     {
-        Serial.println("Não há obstáculo");
+        // Serial.println("Não há obstáculo");
+        printf("Não há obstáculo\n");
     }
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 }
 
+/* Exemplo de como usar 
+    (Função comentada para não dar conflito)
 void app_main(void)
 {
     setup();
@@ -38,3 +42,4 @@ void app_main(void)
         loop();
     }
 }
+*/
