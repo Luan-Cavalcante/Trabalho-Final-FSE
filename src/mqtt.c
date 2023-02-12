@@ -79,7 +79,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             // MOVIMENTACAO DO CARRINHO
             cJSON *params = cJSON_GetObjectItem(json, "params");
             char *movement = cJSON_GetObjectItem(params, "movement")->valuestring;
-            bool isPressing = cJSON_GetObjectItem(params, "on")->valueint;
+            bool isPressing = cJSON_GetObjectItem(params, "value")->valueint;
             ESP_LOGI(TAG, "Recebi movimento %s -> %d", movement, isPressing);
 
             int direction = CAR_IDLE;
@@ -99,11 +99,15 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
             carMove(getCar(), direction);
         }
-
-        if (strcmp(method, "buzina") == 0)
+        else if (strcmp(method, "buzina") == 0)
         {
             cJSON *params = cJSON_GetObjectItem(json, "params");
-            getState()->buzzerOn = cJSON_GetObjectItem(params, "pressing")->valueint;
+            getState()->buzzerOn = cJSON_GetObjectItem(params, "value")->valueint;
+        }
+        else if (strcmp(method, "farol") == 0)
+        {
+            cJSON *params = cJSON_GetObjectItem(json, "params");
+            getState()->headlightOn = cJSON_GetObjectItem(params, "value")->valueint;
         }
 
         cJSON_free(json);
