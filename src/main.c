@@ -155,6 +155,8 @@ void app_main(void)
   DHT11_init(DHT11_PIN);
   // Inicializa buzzer
   timed_sound(456, 1);
+  // Inicializa estado
+  loadState();
 
   xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
   xTaskCreate(&conectadoWifi, "Conexão ao MQTT", 4096, NULL, 1, NULL);
