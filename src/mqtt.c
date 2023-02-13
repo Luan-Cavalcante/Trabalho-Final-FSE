@@ -103,10 +103,16 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         }
         else if (strcmp(method, "buzina") == 0)
             state->buzzerOn = cJSON_GetObjectItem(params, "value")->valueint;
-        else if (state->headlightManual && (method, "farol") == 0)
-            state->headlightOn = cJSON_GetObjectItem(params, "value")->valueint;
-        else if (strcmp(method, "farolManual") == 0)
+        else if (state->headlightManual && strcmp(method, "farol") == 0 && state->headlightOn != cJSON_GetObjectItem(params, "value")->valueint)
+        {
+            state->headlightOn = !state->headlightOn;
+            saveState();
+        }
+        else if (strcmp(method, "farolManual") == 0 && state->headlightManual != params->valueint)
+        {
             state->headlightManual = params->valueint;
+            saveState();
+        }
 
         cJSON_free(json);
         break;
