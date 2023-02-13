@@ -10,5 +10,7 @@ struct State
 };
 
 struct State *getState();
+void saveState();
+void loadState();
 
 #endif
