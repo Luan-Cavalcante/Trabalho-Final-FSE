@@ -58,10 +58,10 @@ void trataComunicacaoComServidor(void *params)
       sprintf(mensagem, "{\"temperatura\": %d, \"umidade\": %d}", state->temperature, state->humidity);
       mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
 
-      sprintf(mensagem, "{\"luz\":%d}", state->light);
+      sprintf(mensagem, "{\"luz\":%d,\"ledFarol\":%d,\"farolManual\":%d}", state->light, state->headlightOn, state->headlightManual);
       mqtt_envia_mensagem("v1/devices/me/attributes", mensagem);
 
-      ESP_LOGI("State", "(buzzerOn=%d,headlightOn=%d,lowPowerMode=%d)", state->buzzerOn, state->headlightOn, state->lowPowerMode);
+      ESP_LOGI("State", "(buzzerOn=%d,headlightOn=%d,headlightManual=%d,lowPowerMode=%d)", state->buzzerOn, state->headlightOn, state->headlightManual, state->lowPowerMode);
       ESP_LOGI("State", "(temperature=%d,humidity=%d,light=%d,obstacle=%d)", state->temperature, state->humidity, state->light, state->obstacle);
     }
   }
@@ -75,7 +75,6 @@ void initGPIO()
   esp_rom_gpio_pad_select_gpio(FAROL1);
   esp_rom_gpio_pad_select_gpio(SENSOR_P);
   esp_rom_gpio_pad_select_gpio(FAROL);
-  // esp_rom_gpio_pad_select_gpio(BUZZER);
 
   // seta para outputs
   gpio_set_direction(LED1, GPIO_MODE_OUTPUT);
@@ -83,9 +82,6 @@ void initGPIO()
   gpio_set_direction(LED3, GPIO_MODE_OUTPUT);
   gpio_set_direction(FAROL1, GPIO_MODE_OUTPUT);
   gpio_set_direction(FAROL, GPIO_MODE_OUTPUT);
-  // gpio_set_direction(BUZZER, GPIO_MODE_OUTPUT);
-
-  // gpio_set_level(BUZZER, 1);
 
   gpio_set_direction(SENSOR_P, GPIO_MODE_INPUT);
 
@@ -112,9 +108,12 @@ void TrataGPIO()
       state->humidity = dht11_value.humidity;
     }
 
+    if (!state->headlightManual)
+      state->headlightOn = (state->light < 200);
+
     /* Atualizando ESP32 */
     // luz
-    if (state->light < 200 || state->headlightOn)
+    if (state->headlightOn)
     {
       gpio_set_level(FAROL, 1);
       gpio_set_level(FAROL1, 1);

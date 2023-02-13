@@ -70,14 +70,16 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
         printf("DATA=%.*s\r\n", event->data_len, event->data);
 
+        struct State *state = getState();
+
         // AQUI FAZ O PARSER DOS DADOS RECEBIDOS EM JSON E METE O LOUCO
         cJSON *json = cJSON_ParseWithLength(event->data, event->data_len);
+        cJSON *params = cJSON_GetObjectItem(json, "params");
 
         char *method = cJSON_GetObjectItem(json, "method")->valuestring;
         if (strcmp(method, "movimento") == 0)
         {
             // MOVIMENTACAO DO CARRINHO
-            cJSON *params = cJSON_GetObjectItem(json, "params");
             char *movement = cJSON_GetObjectItem(params, "movement")->valuestring;
             bool isPressing = cJSON_GetObjectItem(params, "value")->valueint;
             ESP_LOGI(TAG, "Recebi movimento %s -> %d", movement, isPressing);
@@ -100,15 +102,11 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             carMove(getCar(), direction);
         }
         else if (strcmp(method, "buzina") == 0)
-        {
-            cJSON *params = cJSON_GetObjectItem(json, "params");
-            getState()->buzzerOn = cJSON_GetObjectItem(params, "value")->valueint;
-        }
-        else if (strcmp(method, "farol") == 0)
-        {
-            cJSON *params = cJSON_GetObjectItem(json, "params");
-            getState()->headlightOn = cJSON_GetObjectItem(params, "value")->valueint;
-        }
+            state->buzzerOn = cJSON_GetObjectItem(params, "value")->valueint;
+        else if (state->headlightManual && (method, "farol") == 0)
+            state->headlightOn = cJSON_GetObjectItem(params, "value")->valueint;
+        else if (strcmp(method, "farolManual") == 0)
+            state->headlightManual = params->valueint;
 
         cJSON_free(json);
         break;
