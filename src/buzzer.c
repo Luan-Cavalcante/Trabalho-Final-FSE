@@ -17,6 +17,7 @@
 
 #include "sdkconfig.h"
 #include "buzzer.h"
+#include "state.h"
 
 #define BUZZER_GPIO 23
 #define GPIO_OUTPUT_SPEED LEDC_HIGH_SPEED_MODE
@@ -77,7 +78,14 @@ void play_note(struct Note note)
 void play_music(struct Music music)
 {
 	for (int i = 0; i < music.size; i++)
+	{
+		while (!getState()->musicOn)
+		{
+			vTaskDelay(200 / portTICK_PERIOD_MS);
+			continue;
+		}
 		play_note(music.notes[i]);
+	}
 }
 
 // based on https://wiki.mikrotik.com/wiki/Super_Mario_Theme

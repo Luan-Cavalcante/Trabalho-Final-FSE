@@ -58,11 +58,11 @@ void sendStateToDashboard()
   sprintf(mensagem, "{\"temperatura\": %d, \"umidade\": %d}", state->temperature, state->humidity);
   mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
 
-  sprintf(mensagem, "{\"luz\":%d,\"ledFarol\":%d,\"farolManual\":%d,\"lowpower\":%d}", state->light, state->headlightOn, state->headlightManual, state->lowPowerMode);
+  sprintf(mensagem, "{\"luz\":%d,\"ledFarol\":%d,\"farolManual\":%d,\"lowpower\":%d,\"music\":%d,\"sleep\":%d}", state->light, state->headlightOn, state->headlightManual, state->lowPowerMode, state->musicOn, state->sleepMode);
   mqtt_envia_mensagem("v1/devices/me/attributes", mensagem);
 
   ESP_LOGI("State", "(buzzerOn=%d,headlightOn=%d,headlightManual=%d,lowPowerMode=%d)", state->buzzerOn, state->headlightOn, state->headlightManual, state->lowPowerMode);
-  ESP_LOGI("State", "(temperature=%d,humidity=%d,light=%d,obstacle=%d)", state->temperature, state->humidity, state->light, state->obstacle);
+  ESP_LOGI("State", "(temperature=%d,humidity=%d,light=%d,obstacle=%d,musicOn=%d,lowPowerMode=%d)", state->temperature, state->humidity, state->light, state->obstacle, state->musicOn, state->lowPowerMode);
 }
 
 void trataComunicacaoComServidor(void *params)
@@ -108,9 +108,12 @@ void TrataGPIO()
   {
     vTaskDelay(200 / portTICK_PERIOD_MS);
 
+    if (state->lowPowerMode)
+      continue;
+
     /* Atualizando Estado da aplicação */
     state->light = adc1_get_raw(LDR);
-    state->obstacle = gpio_get_level(SENSOR_P);
+    state->obstacle = !gpio_get_level(SENSOR_P);
 
     struct dht11_reading dht11_value = DHT11_read();
     if (dht11_value.status == DHT11_OK)
@@ -120,7 +123,7 @@ void TrataGPIO()
     }
 
     if (!state->headlightManual)
-      state->headlightOn = (state->light < 200);
+      state->headlightOn = (state->light < 400);
 
     /* Atualizando ESP32 */
     // luz
@@ -137,9 +140,12 @@ void TrataGPIO()
 
     // buzzer
     if (state->buzzerOn)
-      make_sound(650);
+      make_sound(850);
     else
       stop_sound();
+
+    if (state->obstacle)
+      timed_sound(657, 600);
   }
 }
 
@@ -164,10 +170,10 @@ void light_sleep_mode()
             vTaskDelay(pdMS_TO_TICKS(10));
         } while (rtc_gpio_get_level(BOTAO_BOOT) == 0);
 
-        state->lowPowerMode = !state->lowPowerMode;
+        state->sleepMode = !state->sleepMode;
     }
 
-    if (!state->lowPowerMode)
+    if (!state->sleepMode)
       continue;
 
     printf("Entrando em modo Light Sleep\n");
@@ -179,6 +185,24 @@ void light_sleep_mode()
 
     // Entra em modo Light Sleep
     esp_light_sleep_start();
+  }
+}
+
+void playMusics()
+{
+  struct Music musics[] = {song_got(), song_star_wars(), song_mario()};
+  int size = sizeof(musics)/sizeof(*musics);
+	while (true)
+	{
+		ESP_LOGI("BUZZER", "Comecando a playlist");
+		for (int i = 0; i < size; i++)
+		{
+			ESP_LOGI("BUZZER", "Tocando a musica %s", musics[i].name);
+			play_music(musics[i]);
+			ESP_LOGI("BUZZER", "Finalizou a musica");
+			vTaskDelay(5000 / portTICK_PERIOD_MS);
+		}
+		ESP_LOGI("BUZZER", "Fim da playlist");
   }
 }
 
@@ -211,6 +235,7 @@ void app_main(void)
   xTaskCreate(&TrataGPIO, "Comunicação com as GPIO", 4096, NULL, 1, NULL);
   xTaskCreate(&conectadoWifi, "Conexão ao MQTT", 4096, NULL, 1, NULL);
   xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
+  xTaskCreate(&playMusics, "Tocar musica", 4096, NULL, 1, NULL);
 
   light_sleep_mode();
 }

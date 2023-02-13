@@ -113,6 +113,16 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             state->headlightManual = params->valueint;
             saveState();
         }
+        else if (strcmp(method, "musica") == 0)
+        {
+            state->musicOn = params->valueint;
+            saveState();
+        }
+        else if (strcmp(method, "lowpower") == 0)
+        {
+            state->lowPowerMode = params->valueint;
+            saveState();
+        }
 
         cJSON_free(json);
         break;

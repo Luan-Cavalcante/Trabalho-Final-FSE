@@ -5,7 +5,8 @@
 
 struct State
 {
-    bool buzzerOn, headlightManual, headlightOn, lowPowerMode;
+    bool buzzerOn, headlightManual, headlightOn, 
+         lowPowerMode, sleepMode, musicOn;
     int temperature, humidity, light, obstacle;
 };
 
