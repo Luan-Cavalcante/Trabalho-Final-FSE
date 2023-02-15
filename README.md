@@ -49,7 +49,9 @@ Faça o build e em seguida o upload no dispositivo.
 Ao iniciar o programa, navegue pelo dashboard para visualizar e controlar as funcionalidades implementadas.
 
 
-## Video
+## Vídeo
+
+[Apresentação](https://youtu.be/xF1mK7a11ss)
 
 ## Imagens
 
@@ -63,12 +65,13 @@ O Carrinho pronto está na imagem abaixo :
 
 ![image](https://user-images.githubusercontent.com/67024690/218897079-6de74383-a7f7-45f4-91c3-9c64762dbba9.png)
 
-## Problemas 
+## Problemas
 
  - O Carrinho ficou muito pesado.
  - Os motores estavam sem redução.
 
-## Melhorias 
+## Melhorias
+
  - Deixar o carrinho mais leve.
  - Usar motores com redução.
 
