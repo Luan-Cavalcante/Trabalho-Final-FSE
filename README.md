@@ -4,7 +4,7 @@ Trabalho 3 da disciplina de Fundamentos de Sistemas Embarcados (2022/2)
 
 Para acessar o projeto, clique [aqui](https://gitlab.com/fse_fga/trabalhos-2022_2/trabalho-final-2022-2).
 
-## Objetivo
+## Objetivo - Carrinho de controle remoto.
 
 A ideia deste trabalho é projetar um carrinho que será controlado remotamente usando um Joystick através da plataforma Thingsboard, além disso, foram usados sensores e atuadores distribuídos baseados nos microcontroladores ESP32 interconectados via Wifi através do protocolo MQTT.
 
@@ -40,13 +40,11 @@ Para fazer a build do programa, carregar o programa na ESP32 e monitorar o progr
 
 ## Sensores
 
-[DHT11](https://www.filipeflop.com/produto/sensor-de-umidade-e-temperatura-dht11/)
-
-[Buzzer](https://blogmasterwalkershop.com.br/arduino/como-usar-com-arduino-buzzer-5v-ativo)
-
-[Joystick KY-023](https://blogmasterwalkershop.com.br/arduino/como-usar-com-arduino-modulo-joystick-ky-023)
-
-[Sensor Infravermelho Reflexivo de Obstáculo KY-032](https://blogmasterwalkershop.com.br/arduino/como-usar-com-arduino-modulo-sensor-infravermelho-reflexivo-de-obstaculo-ky-032)
+ - [DHT11](https://www.filipeflop.com/produto/sensor-de-umidade-e-temperatura-dht11/)
+ - [Buzzer](https://blogmasterwalkershop.com.br/arduino/como-usar-com-arduino-buzzer-5v-ativo)
+ - [Joystick KY-023](https://blogmasterwalkershop.com.br/arduino/como-usar-com-arduino-modulo-joystick-ky-023)
+ - [Sensor Infravermelho Reflexivo de Obstáculo KY-032](https://blogmasterwalkershop.com.br/arduino/como-usar-com-arduino-modulo-sensor-infravermelho-reflexivo-de-obstaculo-ky-032)
+ - [Sensor de Luminosidade LDR](https://www.blogdarobotica.com/2020/09/29/utilizando-o-sensor-de-luminosidade-ldr-no-arduino/)
 
 ## Uso
 
@@ -68,4 +66,17 @@ Onde, os widgets de direção (seta pra cima,baixo, esquerda e direita) e o bot�
 
 O Carrinho pronto está na imagem abaixo : 
 
+![image](https://user-images.githubusercontent.com/67024690/218897079-6de74383-a7f7-45f4-91c3-9c64762dbba9.png)
 
+## Problemas 
+
+ - O Carrinho ficou muito pesado.
+ - Os motores estavam sem redução.
+
+## Melhorias 
+ - Deixar o carrinho mais leve.
+ - Usar motores com redução.
+
+## Agradecimentos 
+
+Agradecemos ao Professor Renato Sampaio pela dedicação durante o semestre e pelas ótimas aulas ministradas para a turma de Fundamentos de Sistemas Embarcados.
