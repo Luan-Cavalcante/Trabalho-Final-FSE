@@ -8,7 +8,6 @@ Para acessar o projeto, clique [aqui](https://gitlab.com/fse_fga/trabalhos-2022_
 
 A ideia deste trabalho é projetar um carrinho que será controlado remotamente usando um Joystick através da plataforma Thingsboard, além disso, foram usados sensores e atuadores distribuídos baseados nos microcontroladores ESP32 interconectados via Wifi através do protocolo MQTT.
 
----
 
 ## Alunos
 
@@ -24,7 +23,6 @@ O programa foi desenvolvido para ser utilizado em uma esp32doit-devkit-v1.
 
 Foi desenvolvido com a extensão do Visual Studio Code Platform IO - https://platformio.org/
 
----
 
 ## Instalação
 
@@ -35,8 +33,6 @@ Baixe o repositório e acesse a pasta.
 `cd Trabalho-Final-FSE`
 
 Para fazer a build do programa, carregar o programa na ESP32 e monitorar o programa foi utilizado como referencia o tutorial [Get Started](https://docs.platformio.org/en/latest/tutorials/espressif32/arduino_debugging_unit_testing.html).
-
----
 
 ## Sensores
 
@@ -52,7 +48,6 @@ Faça o build e em seguida o upload no dispositivo.
 
 Ao iniciar o programa, navegue pelo dashboard para visualizar e controlar as funcionalidades implementadas.
 
----
 
 ## Video
 
