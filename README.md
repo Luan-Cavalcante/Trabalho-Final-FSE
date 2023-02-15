@@ -15,7 +15,7 @@ A ideia deste trabalho é projetar um carrinho que será controlado remotamente 
 | ---------- | ---------------------------------- |
 | 19/0111836 | Luan Vasco Cavalcante              |
 | 14/0156909 | Nathalia Lorena Cardoso Dias       |
-| 190117401  | Thalisson Alves Gonçalves de Jesus |
+| 19/0117401 | Thalisson Alves Gonçalves de Jesus |
 
 ## Requisitos
 
