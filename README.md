@@ -59,3 +59,13 @@ Ao iniciar o programa, navegue pelo dashboard para visualizar e controlar as fun
 ## Video
 
 ## Imagens
+
+O Dashboard ficou com as funções listadas na imagem abaixo : 
+
+![image](https://user-images.githubusercontent.com/67024690/218892946-2e5a37ab-f92a-41cd-95de-c3e69a0a9d66.png)
+
+Onde, os widgets de direção (seta pra cima,baixo, esquerda e direita) e o botão da buzina foram criados pelos alunos.
+
+O Carrinho pronto está na imagem abaixo : 
+
+
